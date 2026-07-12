@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
+import { Coins, ForkKnife, Receipt } from '@phosphor-icons/react';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
+import StatTile from './StatTile';
+import CalorieEngine from './CalorieEngine';
+import PurchasingPower from './PurchasingPower';
+import LogForm from './LogForm';
+import FoodBreakdown from './FoodBreakdown';
 
 // Mission 4 — The Corrupt Economy & Tiffin Ledger.
 // Anonymous log form (payment or food) + a dashboard of what Kuddus extorted.
 // Everything this page sends is anonymous: a payment carries no amount (the
 // server fixes it at 2 Taka), and food carries only the item name. No name,
 // roll, or time ever leaves the browser.
-
-// Same input styling the other forms use, so this page reads as one system.
-const fieldClass =
-    'w-full rounded-control border border-border bg-bg px-3 py-3 text-ink ' +
-    'transition-colors duration-150 ease-[var(--ease-out)] outline-none ' +
-    'focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-ring ' +
-    'focus-visible:ring-offset-2 focus-visible:ring-offset-surface';
 
 // ── The calorie engine (Phase 3) ─────────────────────────────
 // A rough calories-per-item table. Keys are lowercased so lookups are
@@ -41,7 +40,6 @@ const FOOD_COMA_CALORIES = 3000;
 
 const caloriesFor = (name) =>
     CALORIES_PER_ITEM[name.trim().toLowerCase()] ?? DEFAULT_CALORIES;
-
 
 const BUYABLE = [
     { emoji: '🫓', label: 'Jhalmuri packets', price: 10 },
@@ -124,192 +122,72 @@ const TiffinLedger = () => {
     };
 
     return (
-        <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-            <h1 className="text-2xl font-semibold tracking-tight text-ink">
-                The Tiffin Ledger
-            </h1>
-            <p className="mt-3 max-w-prose text-muted">
-                Every time Kuddus charged you 2 Taka for the washroom or swiped your
-                tiffin, log it here — anonymously. No name, no roll, no time is stored.
-                The numbers below add up his whole corrupt economy.
-            </p>
+        <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+            {/* ── Header ───────────────────────────────────────────── */}
+            <header className="rise flex items-start gap-4">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-control border border-border bg-surface text-accent">
+                    <Receipt aria-hidden="true" size={20} weight="bold" />
+                </span>
+                <div>
+                    <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+                        The Tiffin Ledger
+                    </h1>
+                    <p className="mt-2 max-w-prose text-pretty text-muted">
+                        Every time Kuddus charged you 2 Taka for the washroom or swiped your
+                        tiffin, log it here, anonymously. No name, no roll, no time is stored.
+                        The numbers below add up his whole corrupt economy.
+                    </p>
+                </div>
+            </header>
 
             {/* ── Dashboard: the two headline numbers ─────────────────── */}
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-card border border-border bg-surface p-6">
-                    <p className="text-sm font-medium text-muted">Total Extorted</p>
-                    <p className="mt-2 text-4xl font-bold tracking-tight tabular-nums text-ink">
-                        ৳{loadingStats ? '—' : stats.totalTaka.toLocaleString()}
-                    </p>
-                    <p className="mt-1 text-sm text-muted">from 2-Taka washroom tolls</p>
-                </div>
-                <div className="rounded-card border border-border bg-surface p-6">
-                    <p className="text-sm font-medium text-muted">Food Items Stolen</p>
-                    <p className="mt-2 text-4xl font-bold tracking-tight tabular-nums text-ink">
-                        {loadingStats ? '—' : stats.totalFoodItems.toLocaleString()}
-                    </p>
-                    <p className="mt-1 text-sm text-muted">tiffins swiped from students</p>
-                </div>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+                <StatTile
+                    icon={Coins}
+                    label="Total Extorted"
+                    value={`৳${stats.totalTaka.toLocaleString()}`}
+                    sublabel="from 2-Taka washroom tolls"
+                    loading={loadingStats}
+                    delay={0}
+                />
+                <StatTile
+                    icon={ForkKnife}
+                    label="Food Items Stolen"
+                    value={stats.totalFoodItems.toLocaleString()}
+                    sublabel="tiffins swiped from students"
+                    loading={loadingStats}
+                    delay={80}
+                />
             </div>
 
             {/* ── Showpiece visuals: calorie engine + money converter ─── */}
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-                {/* Kuddus's calorie intake, a growing mascot, and a belly meter. */}
-                <div className="rounded-card border border-border bg-surface p-6">
-                    <p className="text-sm font-medium text-muted">Kuddus Calorie Intake</p>
-                    <p className="mt-2 text-4xl font-bold tracking-tight tabular-nums text-ink">
-                        {totalCalories.toLocaleString()}{' '}
-                        <span className="text-lg font-medium text-muted">cal</span>
-                    </p>
-                    <p className="mt-1 text-sm text-muted">
-                        Energy Burned:{' '}
-                        <span className="font-semibold text-ink">0</span> (Ludu lifestyle)
-                    </p>
-
-                    {/* The mascot grows with every calorie. transform-origin at the
-                        bottom so he "puffs up" from his feet rather than the centre. */}
-                    <div className="mt-6 flex h-28 items-end justify-center overflow-hidden">
-                        <span
-                            role="img"
-                            aria-label="Kuddus getting fuller"
-                            className="leading-none transition-transform duration-500 ease-[var(--ease-out)] motion-reduce:transition-none"
-                            style={{
-                                fontSize: '3.5rem',
-                                transform: `scale(${mascotScale})`,
-                                transformOrigin: 'bottom center',
-                            }}
-                        >
-                            {mascotFace}
-                        </span>
-                    </div>
-
-                    {/* Belly fullness meter — fills toward a 3000-cal food coma. */}
-                    <div className="mt-4">
-                        <div className="mb-1 flex justify-between text-xs text-muted">
-                            <span>Belly fullness</span>
-                            <span className="tabular-nums">{fullness}%</span>
-                        </div>
-                        <div className="h-3 w-full overflow-hidden rounded-full border border-border bg-bg">
-                            <div
-                                className="h-full rounded-full bg-accent transition-[width] duration-500 ease-[var(--ease-out)] motion-reduce:transition-none"
-                                style={{ width: `${fullness}%` }}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* What the total loot could have bought — live floor-division. */}
-                <div className="rounded-card border border-border bg-surface p-6">
-                    <p className="text-sm font-medium text-muted">
-                        What his ৳{stats.totalTaka.toLocaleString()} could buy
-                    </p>
-                    <ul className="mt-4 space-y-3">
-                        {BUYABLE.map((buyable) => (
-                            <li
-                                key={buyable.label}
-                                className="flex items-center justify-between"
-                            >
-                                <span className="flex items-center gap-2 text-ink">
-                                    <span className="text-xl" aria-hidden="true">
-                                        {buyable.emoji}
-                                    </span>
-                                    {buyable.label}
-                                </span>
-                                <span className="font-semibold tabular-nums text-ink">
-                                    {Math.floor(stats.totalTaka / buyable.price).toLocaleString()}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <CalorieEngine
+                    totalCalories={totalCalories}
+                    fullness={fullness}
+                    mascotScale={mascotScale}
+                    mascotFace={mascotFace}
+                    delay={160}
+                />
+                <PurchasingPower totalTaka={stats.totalTaka} items={BUYABLE} delay={240} />
             </div>
 
             {/* ── The log form ────────────────────────────────────────── */}
-            <form
-                onSubmit={handleSubmit}
-                className="mt-8 rounded-card border border-border bg-surface p-6"
-            >
-                <p className="mb-1.5 block text-sm font-medium text-ink">What happened?</p>
-
-                {/* Payment vs food chooser — two radio-style buttons. */}
-                <div className="grid grid-cols-2 gap-2">
-                    <button
-                        type="button"
-                        onClick={() => setType('payment')}
-                        className={
-                            'h-11 rounded-control border text-sm font-medium transition-colors duration-150 ease-[var(--ease-out)] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface ' +
-                            (type === 'payment'
-                                ? 'border-accent bg-accent text-accent-ink'
-                                : 'border-border text-ink hover:bg-bg')
-                        }
-                    >
-                        2-Taka washroom toll
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setType('food')}
-                        className={
-                            'h-11 rounded-control border text-sm font-medium transition-colors duration-150 ease-[var(--ease-out)] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface ' +
-                            (type === 'food'
-                                ? 'border-accent bg-accent text-accent-ink'
-                                : 'border-border text-ink hover:bg-bg')
-                        }
-                    >
-                        Stolen food
-                    </button>
-                </div>
-
-                {/* The food name only matters when 'food' is chosen. */}
-                {type === 'food' && (
-                    <div className="mt-4">
-                        <label htmlFor="item" className="mb-1.5 block text-sm font-medium text-ink">
-                            Which food?
-                        </label>
-                        <input
-                            id="item"
-                            type="text"
-                            autoComplete="off"
-                            value={item}
-                            onChange={(event) => setItem(event.target.value)}
-                            placeholder="e.g. fried rice, samosa, sandwich"
-                            className={fieldClass}
-                        />
-                    </div>
-                )}
-
-                <button
-                    type="submit"
-                    disabled={submitting}
-                    className="mt-4 h-11 w-full rounded-control bg-accent font-medium text-accent-ink transition-transform duration-150 ease-[var(--ease-out)] outline-none active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    {submitting ? 'Logging…' : 'Log it anonymously'}
-                </button>
-
-                {error && (
-                    <p role="alert" className="mt-3 text-sm text-danger">
-                        {error}
-                    </p>
-                )}
-            </form>
+            <div className="mt-10">
+                <LogForm
+                    type={type}
+                    onTypeChange={setType}
+                    item={item}
+                    onItemChange={setItem}
+                    onSubmit={handleSubmit}
+                    submitting={submitting}
+                    error={error}
+                    delay={320}
+                />
+            </div>
 
             {/* ── Food breakdown: what he stole, most-swiped first ────── */}
-            {stats.foodBreakdown.length > 0 && (
-                <div className="mt-8">
-                    <h2 className="mb-3 text-lg font-semibold tracking-tight text-ink">
-                        His most-stolen tiffins
-                    </h2>
-                    <ul className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface">
-                        {stats.foodBreakdown.map((food) => (
-                            <li key={food.item} className="flex items-center justify-between px-4 py-3">
-                                <span className="font-medium text-ink">{food.item}</span>
-                                <span className="text-sm tabular-nums text-muted">
-                                    ×{food.count}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+            <FoodBreakdown items={stats.foodBreakdown} loading={loadingStats} delay={0} />
         </section>
     );
 };

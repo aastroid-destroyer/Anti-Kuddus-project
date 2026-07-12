@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 
-// Hardcoded spots a student can be in when they raise a flare. Kept as a simple
-// list so the dropdown and the POST body always agree.
+
 const LOCATIONS = ['Library', 'Playground', 'Corridor', 'Classroom', 'Canteen'];
 
 // The button/select share the same control styling as the rest of the app.
@@ -25,8 +24,6 @@ const SosFlare = () => {
         setError('');
         setSending(true);
         try {
-            // Token (once useAxiosSecure attaches it) lets the backend record
-            // which student raised the flare, so we only send the location.
             await axiosSecure.post('/sos', {
                 location,
                 createdAt: new Date().toISOString(),
@@ -39,7 +36,6 @@ const SosFlare = () => {
         }
     };
 
-    // Confirmation view: replaces the button once the flare is on its way.
     if (sent) {
         return (
             <section className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center px-4 py-16 text-center sm:px-6">
