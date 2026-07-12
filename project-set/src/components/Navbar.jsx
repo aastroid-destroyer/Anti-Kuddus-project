@@ -20,6 +20,7 @@ const authedLinks = [
     { to: '/all-complaints', label: 'All complaints', end: false },
     { to: '/captain', label: 'Captain', end: false },
     { to: '/syllabus-negotiator', label: 'Syllabus', end: false },
+    { to: '/kuddus-fact-checker', label: 'Fact-Checker', end: false },
 ];
 
 // The sliding pill is the active indicator, so links themselves only carry the

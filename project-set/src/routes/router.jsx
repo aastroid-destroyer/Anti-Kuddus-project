@@ -10,6 +10,7 @@ import SyllabusNegotiator from "../pages/syllabus-negotiator/SyllabusNegotiator"
 import TiffinLedger from "../pages/tiffin-ledger/TiffinLedger";
 import SosFlare from "../pages/sos-flare/SosFlare";
 import CaptainDashboard from "../pages/sos-captain/CaptainDashboard";
+import KuddusFactChecker from "../pages/kuddus-fact-checker/KuddusFactChecker";
 import PrivateRoute from "./PrivateRoute";
 
 
@@ -64,6 +65,14 @@ export const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <CaptainDashboard></CaptainDashboard>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "kuddus-fact-checker",
+        element: (
+          <PrivateRoute>
+            <KuddusFactChecker></KuddusFactChecker>
           </PrivateRoute>
         ),
       },

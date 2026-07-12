@@ -163,4 +163,69 @@
       transition: opacity 0.2s var(--ease-out);
     }
   }
+
+  /* Hero console: a slow rotating arc suggesting a system quietly scanning.
+     Rotates only (GPU transform), so it stays cheap even while looping. */
+  @keyframes scan-rotate {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .scan-ring {
+    animation: scan-rotate 6s linear infinite;
+  }
+
+  /* Vertical marquee: same seamless two-halves trick, but on the
+     Y axis. The track holds two identical stacks; sliding from -50% to 0 walks
+     the cards downward while the second half backfills the top, so the loop is
+     endless. Transform only, so it stays on the compositor. */
+  @keyframes marquee-scroll-vert {
+    from {
+      transform: translateY(-50%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .marquee-vert-track {
+    animation: marquee-scroll-vert var(--marquee-vert-duration, 24s) linear
+      infinite;
+  }
+
+  /* Pausing on hover lets a reader stop and read a card in full. */
+  .marquee-vert:hover .marquee-vert-track {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-vert-track {
+      animation: none;
+    }
+  }
+
+  /* Live-status dot on the "Active" pill. Opacity only. */
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  .pulse-dot {
+    animation: pulse-dot 2s var(--ease-in-out) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scan-ring {
+      animation: none;
+    }
+    .pulse-dot {
+      animation: none;
+    }
+  }
 }
