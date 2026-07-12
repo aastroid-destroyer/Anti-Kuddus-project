@@ -37,16 +37,12 @@ const CALORIES_PER_ITEM = {
 };
 const DEFAULT_CALORIES = 200;
 
-// How many calories mean a full belly (fills the meter to 100%).
 const FOOD_COMA_CALORIES = 3000;
 
-// Look up one food's calories, case-insensitively, with a sane fallback.
 const caloriesFor = (name) =>
     CALORIES_PER_ITEM[name.trim().toLowerCase()] ?? DEFAULT_CALORIES;
 
-// ── The money converter (Phase 3) ────────────────────────────
-// Hardcoded prices in Taka. We floor-divide the total loot by each price to
-// show how many of each Kuddus could have bought. Edit prices/items at will.
+
 const BUYABLE = [
     { emoji: '🫓', label: 'Jhalmuri packets', price: 10 },
     { emoji: '☕', label: 'cups of cha', price: 7 },

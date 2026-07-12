@@ -27,6 +27,13 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Elevation scale. Shadows tint to the ink hue (never pure black) and swap
+     per theme through the vars in :root, matching the color pattern above.
+     raised = selected chip/pill, bar = pinned nav, menu = mobile overlay. */
+  --shadow-raised: var(--sh-raised);
+  --shadow-bar: var(--sh-bar);
+  --shadow-menu: var(--sh-menu);
 }
 
 @layer base {
@@ -47,6 +54,13 @@
     --danger: oklch(0.52 0.19 25);
     --danger-bg: oklch(0.96 0.03 25);
     --ring: oklch(0.55 0.15 255);
+
+    /* Soft, ink-tinted elevation for light surfaces (no pure-black drop). */
+    --sh-raised: 0 1px 1px oklch(0.42 0.03 262 / 0.05),
+      0 2px 4px oklch(0.42 0.03 262 / 0.08);
+    --sh-bar: 0 1px 0 oklch(0.42 0.03 262 / 0.06),
+      0 10px 30px -16px oklch(0.3 0.03 262 / 0.28);
+    --sh-menu: 0 16px 40px -18px oklch(0.3 0.03 262 / 0.3);
   }
 
   /* Dark tonal set: lighter, desaturated variants (not inverted). Shared by the
@@ -63,6 +77,10 @@
       --danger: oklch(0.72 0.16 25);
       --danger-bg: oklch(0.28 0.06 25);
       --ring: oklch(0.72 0.13 255);
+
+      --sh-raised: 0 1px 2px oklch(0.12 0.02 262 / 0.5);
+      --sh-bar: 0 10px 30px -16px oklch(0.1 0.02 262 / 0.6);
+      --sh-menu: 0 16px 40px -18px oklch(0.1 0.02 262 / 0.65);
     }
   }
 
@@ -78,6 +96,10 @@
     --danger: oklch(0.72 0.16 25);
     --danger-bg: oklch(0.28 0.06 25);
     --ring: oklch(0.72 0.13 255);
+
+    --sh-raised: 0 1px 2px oklch(0.12 0.02 262 / 0.5);
+    --sh-bar: 0 10px 30px -16px oklch(0.1 0.02 262 / 0.6);
+    --sh-menu: 0 16px 40px -18px oklch(0.1 0.02 262 / 0.65);
   }
 
   body {
@@ -85,5 +107,60 @@
     color: var(--ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* One-shot entrance primitive for above-the-fold reveals. It is CSS-driven so
+     it plays on first paint without JS and, because the keyframe only defines a
+     `from`, the element rests in its natural (visible) state. That means content
+     is never gated behind a class toggle (design.md §6.D) and headless renders
+     still show it. Stagger siblings with an inline `animation-delay`. */
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  .rise {
+    animation: rise 0.7s var(--ease-out) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise {
+      animation: none;
+    }
+  }
+
+  /* Navbar entrance: the bar settles down from just above its resting spot on
+     first paint. Like .rise it only defines a `from`, so the bar rests visible
+     and is never gated behind a class toggle. */
+  @keyframes nav-descend {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+
+  .nav-enter {
+    animation: nav-descend 0.6s var(--ease-out) both;
+  }
+
+  /* Sliding active indicator. Its transform + width are written to the node
+     directly from JS; only the transition lives here so every reposition shares
+     one rhythm. Reduced motion keeps the fade but drops the slide. */
+  .nav-pill {
+    transition:
+      transform 0.32s var(--ease-out),
+      width 0.32s var(--ease-out),
+      opacity 0.2s var(--ease-out);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-enter {
+      animation: none;
+    }
+    .nav-pill {
+      transition: opacity 0.2s var(--ease-out);
+    }
   }
 }

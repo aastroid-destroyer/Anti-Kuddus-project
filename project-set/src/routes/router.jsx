@@ -37,19 +37,19 @@ export const router = createBrowserRouter([
             <AllComplaints></AllComplaints>
           </PrivateRoute>
         ),
-        
+
       },
       {
         path: "seat-planner",
-        element: <SeatPlanner></SeatPlanner>,
+        element: <PrivateRoute><SeatPlanner></SeatPlanner></PrivateRoute>,
       },
       {
         path: "syllabus-negotiator",
-        element: <SyllabusNegotiator></SyllabusNegotiator>,
+        element: <PrivateRoute><SyllabusNegotiator></SyllabusNegotiator></PrivateRoute>,
       },
       {
         path: "tiffin-ledger",
-        element: <TiffinLedger></TiffinLedger>,
+        element: <PrivateRoute><TiffinLedger></TiffinLedger></PrivateRoute>,
       },
       {
         path: "sos",
@@ -77,5 +77,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  
+
 ]);
