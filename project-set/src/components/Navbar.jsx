@@ -8,11 +8,18 @@ import ThemeToggle from './ThemeToggle';
 const publicLinks = [
     { to: '/', label: 'Home', end: true },
     { to: '/make-complaint', label: 'Make a complaint', end: false },
+    { to: '/seat-planner', label: 'Seat planner', end: false },
+    { to: '/syllabus-negotiator', label: 'Syllabus', end: false },
+    { to: '/tiffin-ledger', label: 'Tiffin ledger', end: false },
+    { to: '/sos', label: 'SOS', end: false },
 ];
 
 // Only meaningful once signed in, so it stays out of the bar until then.
+// The captain dashboard is shown to everyone signed in for convenience; the
+// backend is what actually gates the data (non-captains get 403, no alerts).
 const authedLinks = [
     { to: '/all-complaints', label: 'All complaints', end: false },
+    { to: '/captain', label: 'Captain', end: false },
 ];
 
 const linkClass = ({ isActive }) =>
