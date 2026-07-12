@@ -80,6 +80,21 @@ app.get('/me', verifyToken, (req, res) => {
     res.send({ authenticated: true });
 });
 
+// List every complaint. Content only, newest first — the collection never
+// holds identity, so returning all of it leaks nothing about who filed what.
+app.get('/complaints', async (req, res) => {
+    try {
+        const all = await complaints
+            .find({})
+            .sort({ createdAt: -1 })
+            .toArray();
+        res.send(all);
+    } catch (err) {
+        console.error('Failed to load complaints:', err.message);
+        res.status(500).send({ error: 'Could not load complaints' });
+    }
+});
+
 // File an anonymous complaint. Only the report content is stored —
 // no token, no identity, nothing that could trace back to the sender.
 app.post('/complaints', async (req, res) => {

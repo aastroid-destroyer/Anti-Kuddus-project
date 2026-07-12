@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router';
 import useAuth from '../hooks/useAuth';
+import ThemeToggle from './ThemeToggle';
 
 // Public links render for everyone. "Make a complaint" is behind PrivateRoute,
 // so an unauthenticated tap lands on /login and returns here after sign in.
-const navLinks = [
+const publicLinks = [
     { to: '/', label: 'Home', end: true },
     { to: '/make-complaint', label: 'Make a complaint', end: false },
+];
+
+// Only meaningful once signed in, so it stays out of the bar until then.
+const authedLinks = [
+    { to: '/all-complaints', label: 'All complaints', end: false },
 ];
 
 const linkClass = ({ isActive }) =>
@@ -22,6 +28,9 @@ const Navbar = () => {
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
     const [signingOut, setSigningOut] = useState(false);
+
+    // Authed links only appear once a user is present; loading shows none yet.
+    const navLinks = user ? [...publicLinks, ...authedLinks] : publicLinks;
 
     const closeMenu = () => setMenuOpen(false);
 
@@ -99,7 +108,7 @@ const Navbar = () => {
                     </span>
                 </Link>
 
-                {/* Desktop: links + auth on one line. */}
+                {/* Desktop: links + theme toggle + auth on one line. */}
                 <div className="hidden items-center gap-1 md:flex">
                     {navLinks.map((link) => (
                         <NavLink key={link.to} to={link.to} end={link.end} className={linkClass}>
@@ -107,36 +116,40 @@ const Navbar = () => {
                         </NavLink>
                     ))}
                     <span className="mx-2 h-5 w-px bg-border" aria-hidden="true" />
+                    <ThemeToggle />
                     {authActions}
                 </div>
 
-                {/* Mobile: single toggle. */}
-                <button
-                    type="button"
-                    onClick={() => setMenuOpen((open) => !open)}
-                    aria-expanded={menuOpen}
-                    aria-controls="mobile-menu"
-                    aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-                    className="grid h-11 w-11 place-items-center rounded-control text-ink outline-none transition-colors duration-150 hover:bg-surface focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg md:hidden"
-                >
-                    <span aria-hidden="true" className="relative block h-4 w-5">
-                        <span
-                            className={`absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-200 ease-[var(--ease-out)] motion-reduce:transition-none ${
-                                menuOpen ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-0'
-                            }`}
-                        />
-                        <span
-                            className={`absolute left-0 top-1/2 block h-0.5 w-5 -translate-y-1/2 rounded-full bg-current transition-opacity duration-200 motion-reduce:transition-none ${
-                                menuOpen ? 'opacity-0' : 'opacity-100'
-                            }`}
-                        />
-                        <span
-                            className={`absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-200 ease-[var(--ease-out)] motion-reduce:transition-none ${
-                                menuOpen ? 'top-1/2 -translate-y-1/2 -rotate-45' : 'bottom-0'
-                            }`}
-                        />
-                    </span>
-                </button>
+                {/* Mobile: theme toggle stays reachable without opening the menu. */}
+                <div className="flex items-center gap-1 md:hidden">
+                    <ThemeToggle />
+                    <button
+                        type="button"
+                        onClick={() => setMenuOpen((open) => !open)}
+                        aria-expanded={menuOpen}
+                        aria-controls="mobile-menu"
+                        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                        className="grid h-11 w-11 place-items-center rounded-control text-ink outline-none transition-colors duration-150 hover:bg-surface focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                    >
+                        <span aria-hidden="true" className="relative block h-4 w-5">
+                            <span
+                                className={`absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-200 ease-[var(--ease-out)] motion-reduce:transition-none ${
+                                    menuOpen ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-0'
+                                }`}
+                            />
+                            <span
+                                className={`absolute left-0 top-1/2 block h-0.5 w-5 -translate-y-1/2 rounded-full bg-current transition-opacity duration-200 motion-reduce:transition-none ${
+                                    menuOpen ? 'opacity-0' : 'opacity-100'
+                                }`}
+                            />
+                            <span
+                                className={`absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-200 ease-[var(--ease-out)] motion-reduce:transition-none ${
+                                    menuOpen ? 'top-1/2 -translate-y-1/2 -rotate-45' : 'bottom-0'
+                                }`}
+                            />
+                        </span>
+                    </button>
+                </div>
             </nav>
 
             {/* Mobile panel. Rendered only when open; links close it on tap. */}

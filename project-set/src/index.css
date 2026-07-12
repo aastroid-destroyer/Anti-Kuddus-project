@@ -30,7 +30,12 @@
 }
 
 @layer base {
-  /* Light theme. No pure #000/#fff, no cream/beige body background. */
+  /* One dark-mode strategy for the whole project: the [data-theme] attribute
+     on <html> (frontend-rules §2). ThemeProvider stamps "light"/"dark" from the
+     saved toggle; with no attribute set we fall back to the OS preference so the
+     very first paint still matches the user's system. */
+
+  /* Light theme (default). No pure #000/#fff, no cream/beige body background. */
   :root {
     --bg: oklch(0.98 0.006 255);
     --surface: oklch(0.994 0.004 255);
@@ -44,9 +49,10 @@
     --ring: oklch(0.55 0.15 255);
   }
 
-  /* Dark theme: lighter, desaturated tonal variants (not inverted). */
+  /* Dark tonal set: lighter, desaturated variants (not inverted). Shared by the
+     system-preference fallback and the explicit toggle below. */
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]):not([data-theme="dark"]) {
       --bg: oklch(0.2 0.015 262);
       --surface: oklch(0.24 0.018 262);
       --border: oklch(0.33 0.02 262);
@@ -58,6 +64,20 @@
       --danger-bg: oklch(0.28 0.06 25);
       --ring: oklch(0.72 0.13 255);
     }
+  }
+
+  /* Explicit user choice wins over the OS preference in both directions. */
+  :root[data-theme="dark"] {
+    --bg: oklch(0.2 0.015 262);
+    --surface: oklch(0.24 0.018 262);
+    --border: oklch(0.33 0.02 262);
+    --ink: oklch(0.95 0.006 262);
+    --muted: oklch(0.7 0.015 262);
+    --accent: oklch(0.72 0.13 255);
+    --accent-ink: oklch(0.18 0.02 262);
+    --danger: oklch(0.72 0.16 25);
+    --danger-bg: oklch(0.28 0.06 25);
+    --ring: oklch(0.72 0.13 255);
   }
 
   body {

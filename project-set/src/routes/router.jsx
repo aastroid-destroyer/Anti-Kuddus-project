@@ -4,6 +4,7 @@ import Home from "../pages/home/Home";
 import Login from "../pages/login/Login";
 import Register from "../pages/register/Register";
 import MakeComplaint from "../pages/make-complaint/MakeComplaint";
+import AllComplaints from "../pages/all-complaints/AllComplaints";
 import PrivateRoute from "./PrivateRoute";
 
 
@@ -24,14 +25,24 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      {
+        path: "all-complaints",
+        element: (
+          <PrivateRoute>
+            <AllComplaints></AllComplaints>
+          </PrivateRoute>
+        ),
+        
+      },
+      {
+        path: "/login",
+        element: <Login></Login>,
+      },
+      {
+        path: "/register",
+        element: <Register></Register>,
+      },
     ],
   },
-  {
-    path: "/login",
-    element: <Login></Login>,
-  },
-  {
-    path: "/register",
-    element: <Register></Register>,
-  },
+  
 ]);
