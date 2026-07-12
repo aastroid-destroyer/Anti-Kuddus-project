@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+/* Design tokens. Components consume these through Tailwind utilities
+   (bg-bg, text-ink, rounded-control, ...). Never hardcode hex in a component. */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+
+  /* Semantic colors map to the swappable vars defined in :root below,
+     so light/dark is handled in one place. */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-ring: var(--ring);
+
+  /* One two-tier radius system: controls vs. cards. */
+  --radius-control: 10px;
+  --radius-card: 16px;
+
+  /* Shared motion curves (design.md §6.C). */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@layer base {
+  /* Light theme. No pure #000/#fff, no cream/beige body background. */
+  :root {
+    --bg: oklch(0.98 0.006 255);
+    --surface: oklch(0.994 0.004 255);
+    --border: oklch(0.9 0.01 255);
+    --ink: oklch(0.24 0.02 262);
+    --muted: oklch(0.52 0.02 262);
+    --accent: oklch(0.55 0.15 255);
+    --accent-ink: oklch(0.99 0.01 255);
+    --danger: oklch(0.52 0.19 25);
+    --danger-bg: oklch(0.96 0.03 25);
+    --ring: oklch(0.55 0.15 255);
+  }
+
+  /* Dark theme: lighter, desaturated tonal variants (not inverted). */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(0.2 0.015 262);
+      --surface: oklch(0.24 0.018 262);
+      --border: oklch(0.33 0.02 262);
+      --ink: oklch(0.95 0.006 262);
+      --muted: oklch(0.7 0.015 262);
+      --accent: oklch(0.72 0.13 255);
+      --accent-ink: oklch(0.18 0.02 262);
+      --danger: oklch(0.72 0.16 25);
+      --danger-bg: oklch(0.28 0.06 25);
+      --ring: oklch(0.72 0.13 255);
+    }
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
