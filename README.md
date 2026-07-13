@@ -48,6 +48,8 @@ Only the following users can access the **Captain Dashboard**:
 
 These two users are the **Captains**.
 
+### 3. Login in to any other user and checkout all the feature. Only for SOS notification Only captain can Access that
+
 All other students are treated as **Normal Students** and cannot access captain-only routes.
 
 ---
