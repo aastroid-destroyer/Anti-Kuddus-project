@@ -89,6 +89,7 @@ let complaints;         // { category, description, date }  — NEVER identity
 let dailySubmissions;   // { hash }                         — NEVER complaint content
 let ledger;             // { type, amount, item, date }     — NEVER identity (Mission 4)
 let sos;                // { location, status, date }       — NEVER identity (Mission 5, Option 1)
+let students;           // { name, roll, height, isSpecial } (Mission 2 — Seat Planner)
 
 async function connectDb() {
     await client.connect();
@@ -97,6 +98,7 @@ async function connectDb() {
     dailySubmissions = db.collection('dailySubmissions');
     ledger = db.collection('ledger');
     sos = db.collection('sos');
+    students = db.collection('students');
     console.log("Connected to MongoDB (benami db).");
 }
 
@@ -344,6 +346,70 @@ app.patch('/sos/:id/resolve', verifyToken, async (req, res) => {
     } catch (err) {
         console.error('Failed to resolve SOS:', err.message);
         res.status(500).send({ error: 'Could not resolve SOS' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
+// MISSION 2 — Seat Planner (Phase 1: add & list students)
+// A student record is just { name, roll, height, isSpecial } — no identity
+// token needed, same as /complaints and /rules.
+// ─────────────────────────────────────────────────────────────
+
+// Add one student to the roster.
+app.post('/students', async (req, res) => {
+    const { name, roll, height, isSpecial } = req.body || {};
+
+    if (!name || !name.trim()) {
+        return res.status(400).send({ error: 'name is required' });
+    }
+    if (roll === undefined || roll === null || `${roll}`.trim() === '') {
+        return res.status(400).send({ error: 'roll is required' });
+    }
+    if (typeof height !== 'number' || Number.isNaN(height) || height <= 0) {
+        return res.status(400).send({ error: 'height must be a positive number (cm)' });
+    }
+
+    try {
+        const result = await students.insertOne({
+            name: name.trim(),
+            roll: `${roll}`.trim(),
+            height,
+            isSpecial: Boolean(isSpecial),
+        });
+        res.status(201).send({ acknowledged: result.acknowledged, id: result.insertedId });
+    } catch (err) {
+        console.error('Failed to save student:', err.message);
+        res.status(500).send({ error: 'Could not save student' });
+    }
+});
+
+// List every student, no particular order.
+app.get('/students', async (req, res) => {
+    try {
+        const all = await students.find({}).toArray();
+        res.send(all);
+    } catch (err) {
+        console.error('Failed to load students:', err.message);
+        res.status(500).send({ error: 'Could not load students' });
+    }
+});
+
+// The seating rule: isSpecial students first (front rows), then everyone
+// else shortest to tallest. Pure function on an array — no DB, easy to read.
+function orderForSeating(list) {
+    const special = list.filter((s) => s.isSpecial);
+    const rest = list.filter((s) => !s.isSpecial).sort((a, b) => a.height - b.height);
+    return [...special, ...rest];
+}
+
+// Return all students in seating order (front row to back).
+app.get('/students/sorted', async (req, res) => {
+    try {
+        const all = await students.find({}).toArray();
+        res.send(orderForSeating(all));
+    } catch (err) {
+        console.error('Failed to load sorted students:', err.message);
+        res.status(500).send({ error: 'Could not load sorted students' });
     }
 });
 

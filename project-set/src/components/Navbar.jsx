@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import { motion, useReducedMotion } from 'motion/react';
 import useAuth from '../hooks/useAuth';
 import ThemeToggle from './ThemeToggle';
-import pic from '../assets/pic-PhotoRoom.png'
+import logo from '../assets/pic-Photoroom.png';
 
 // Mirrors --ease-out from index.css so the JS-driven float shares the same
 // rhythm as every CSS transition in the bar.
@@ -206,6 +206,7 @@ const Navbar = () => {
             >
                 Log in
             </Link>
+
         </>
     );
 
@@ -264,7 +265,12 @@ const Navbar = () => {
                     onClick={closeMenu}
                     className="group flex items-center gap-2.5 rounded-control outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                 >
-                    <img src={pic} alt="" className='h-9 w-9 hover:-translate-y-1 transition-transform duration-200 ease-out rounded-full'/>
+                    <img
+                        src={logo}
+                        alt=""
+                        aria-hidden="true"
+                        className="h-9 w-9 rounded-control object-contain shadow-raised transition-transform duration-200 ease-[var(--ease-out)] group-hover:-translate-y-0.5 motion-reduce:transform-none"
+                    />
                     <span className="text-base font-semibold tracking-tight text-ink">
                         Anti Bully Protocol
                     </span>

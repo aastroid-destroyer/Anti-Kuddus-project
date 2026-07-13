@@ -95,7 +95,7 @@ const Login = () => {
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                         </svg>
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-ink">Benami</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-ink">Silent Login</h1>
                     <p className="mt-3 text-sm text-muted max-w-xs mx-auto leading-relaxed">
                         Sign in to file a complaint. No one sees who you are.
                     </p>
@@ -139,7 +139,7 @@ const Login = () => {
                             </p>
                         ) : (
                             <p id="roll-hint" className="mt-1.5 text-sm text-muted">
-                                Your class roll number, for example 23.
+                                Test: <br />roll number 10 for student, roll number 2 for captain
                             </p>
                         )}
                     </div>
@@ -177,6 +177,9 @@ const Login = () => {
                                 {errors.password}
                             </p>
                         )}
+                        <p className="mt-1.5 text-sm text-muted">
+                            Test: <br />studentpass: 8hm6NUVo, <br />captainpass: ukgE2Nbs
+                        </p>
                     </div>
 
                     <button

@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
+    ArrowClockwise,
     ArrowRight,
     ArrowsDownUp,
     Check,
     ListNumbers,
     Ruler,
     Star,
-    Trash,
+    UsersThree,
+    WarningCircle,
     X,
 } from '@phosphor-icons/react';
+import useAxiosSecure from '../../hooks/useAxiosSecure';
+import ClassroomMap from './ClassroomMap';
 
 // Sensible bounds for a student's height, kept as named constants so the
 // validation rule is not a magic number buried in the form.
@@ -25,8 +30,8 @@ const EASE_OUT = [0.23, 1, 0.32, 1];
 const TOAST_DURATION = 5000;
 
 // Premium confirmation toast. Slides in from the corner, counts down with a
-// thin progress bar, and can be dismissed early. Purely presentational —
-// the parent controls when it mounts and unmounts (via AnimatePresence).
+// thin progress bar, and can be dismissed early. Purely presentational, the
+// parent controls when it mounts and unmounts (via AnimatePresence).
 const Toast = ({ name, onDismiss }) => {
     const reduce = useReducedMotion();
 
@@ -106,7 +111,7 @@ const ASSURANCES = [
     },
     {
         icon: ArrowsDownUp,
-        text: 'The roster lives here as you build it — arrange the seats once it is complete.',
+        text: 'The roster lives here as you build it, ready for the seating chart once it is complete.',
     },
 ];
 
@@ -130,17 +135,31 @@ const AssuranceStack = () => (
 );
 
 const SeatPlanner = () => {
+    const axiosSecure = useAxiosSecure();
+    const queryClient = useQueryClient();
     const reduce = useReducedMotion();
 
-    // The single source of truth for Phase A: every student the teacher adds.
-    // Later phases will read from this same array, no backend involved.
-    const [students, setStudents] = useState([]);
+    // The roster, fetched from the backend. Every add refetches this so the
+    // list on screen always mirrors what is actually stored.
+    const {
+        data: students = [],
+        isPending,
+        isError,
+        refetch,
+    } = useQuery({
+        queryKey: ['students'],
+        queryFn: async () => {
+            const res = await axiosSecure.get('/students');
+            return Array.isArray(res.data) ? res.data : [];
+        },
+    });
 
     // Bumping the key remounts the toast so a fresh submit always re-plays the
     // enter animation, even if one is still on screen.
     const [toastKey, setToastKey] = useState(0);
     const [toastName, setToastName] = useState('');
     const [toastVisible, setToastVisible] = useState(false);
+    const [formError, setFormError] = useState('');
 
     const dismissToast = useCallback(() => setToastVisible(false), []);
 
@@ -150,14 +169,16 @@ const SeatPlanner = () => {
         reset,
         setError,
         setFocus,
-        formState: { errors },
+        formState: { errors, isSubmitting },
     } = useForm({
         defaultValues: { name: '', roll: '', height: '', isSpecial: false },
     });
 
-    // Add one student to state. Roll is treated as the identifier, so a
-    // duplicate roll is rejected inline rather than silently added.
-    const onSubmit = (values) => {
+    // Post one student to the backend, then refresh the roster from the
+    // source of truth instead of guessing what the server stored.
+    const onSubmit = async (values) => {
+        setFormError('');
+
         const roll = values.roll.trim();
         const alreadyUsed = students.some((student) => student.roll === roll);
         if (alreadyUsed) {
@@ -167,26 +188,22 @@ const SeatPlanner = () => {
         }
 
         const name = values.name.trim();
-        setStudents((current) => [
-            ...current,
-            {
-                id: crypto.randomUUID(),
+        try {
+            await axiosSecure.post('/students', {
                 name,
                 roll,
                 height: Number(values.height),
                 isSpecial: values.isSpecial,
-            },
-        ]);
-        reset();
-        setFocus('name');
-        setToastName(name);
-        setToastKey((key) => key + 1);
-        setToastVisible(true);
-    };
-
-    // Drop one student by id (stable key, so removal never hits the wrong row).
-    const removeStudent = (id) => {
-        setStudents((current) => current.filter((student) => student.id !== id));
+            });
+            await queryClient.invalidateQueries({ queryKey: ['students'] });
+            reset();
+            setFocus('name');
+            setToastName(name);
+            setToastKey((key) => key + 1);
+            setToastVisible(true);
+        } catch {
+            setFormError('Could not add this student. Please try again.');
+        }
     };
 
     // Entrance choreography: a gentle stagger that reveals content already
@@ -208,6 +225,7 @@ const SeatPlanner = () => {
           };
 
     return (
+        <>
         <section className="relative mx-auto grid max-w-6xl gap-12 overflow-x-clip px-4 py-16 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 lg:py-24">
             <AnimatePresence>
                 {toastVisible && <Toast key={toastKey} name={toastName} onDismiss={dismissToast} />}
@@ -242,7 +260,7 @@ const SeatPlanner = () => {
                 </motion.h1>
                 <motion.p variants={item} className="mt-5 max-w-md text-pretty text-muted">
                     Add every student in the class with their height. The seating arrangement comes
-                    later — first build the roster.
+                    later, once the roster is complete.
                 </motion.p>
 
                 <motion.div variants={item} className="mt-8 max-w-md">
@@ -278,8 +296,22 @@ const SeatPlanner = () => {
                     variants={item}
                     noValidate
                     onSubmit={handleSubmit(onSubmit)}
+                    aria-busy={isSubmitting}
                     className="rounded-card border border-border bg-surface p-6 shadow-raised sm:p-8"
                 >
+                    {formError && (
+                        <motion.div
+                            role="alert"
+                            initial={reduce ? false : { opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.2, ease: EASE_OUT }}
+                            className="mb-5 flex items-start gap-2 rounded-control bg-danger-bg px-3 py-2 text-sm text-danger"
+                        >
+                            <X size={16} weight="bold" className="mt-0.5 shrink-0" aria-hidden="true" />
+                            <span>{formError}</span>
+                        </motion.div>
+                    )}
+
                     <div className="mb-5">
                         <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-ink">
                             Name
@@ -370,45 +402,99 @@ const SeatPlanner = () => {
 
                     <motion.button
                         type="submit"
+                        disabled={isSubmitting}
                         whileTap={reduce ? undefined : { scale: 0.98 }}
                         transition={{ duration: 0.12, ease: EASE_OUT }}
-                        className="group flex h-11 w-full items-center justify-center gap-2 rounded-control bg-accent font-medium text-accent-ink outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                        className="group flex h-11 w-full items-center justify-center gap-2 rounded-control bg-accent font-medium text-accent-ink outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        Add student
-                        <ArrowRight
-                            size={18}
-                            weight="bold"
-                            aria-hidden="true"
-                            className="transition-transform duration-200 ease-[var(--ease-out)] group-hover:translate-x-0.5 motion-reduce:transition-none"
-                        />
+                        {isSubmitting ? (
+                            'Adding...'
+                        ) : (
+                            <>
+                                Add student
+                                <ArrowRight
+                                    size={18}
+                                    weight="bold"
+                                    aria-hidden="true"
+                                    className="transition-transform duration-200 ease-[var(--ease-out)] group-hover:translate-x-0.5 motion-reduce:transition-none"
+                                />
+                            </>
+                        )}
                     </motion.button>
                 </motion.form>
 
-                {/* The roster. Empty state explains how to fill it (design §7). */}
+                {/* The roster. Every async state (design.md §7) gets its own branch:
+                    loading skeleton, error with retry, empty, then the real list. */}
                 <motion.div variants={item} className="mt-8">
                     <div className="mb-3 flex items-baseline justify-between">
-                        <h2 className="text-lg font-semibold tracking-tight text-ink">Students</h2>
-                        <span className="text-sm tabular-nums text-muted">
-                            {students.length} added
-                        </span>
+                        <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-ink">
+                            <UsersThree size={20} weight="fill" className="text-accent" aria-hidden="true" />
+                            Students
+                        </h2>
+                        {!isPending && !isError && (
+                            <span className="text-sm tabular-nums text-muted">
+                                {students.length} added
+                            </span>
+                        )}
                     </div>
 
-                    {students.length === 0 ? (
+                    {isPending && (
+                        <div className="space-y-2" aria-busy="true">
+                            {[0, 1, 2].map((i) => (
+                                <div
+                                    key={i}
+                                    className="h-[60px] animate-pulse rounded-card border border-border bg-surface"
+                                    aria-hidden="true"
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {isError && (
+                        <div
+                            role="alert"
+                            className="flex items-start gap-3 rounded-card border border-border bg-surface p-5"
+                        >
+                            <WarningCircle
+                                size={20}
+                                weight="fill"
+                                className="mt-0.5 shrink-0 text-danger"
+                                aria-hidden="true"
+                            />
+                            <div>
+                                <p className="text-sm font-medium text-ink">Could not load the roster</p>
+                                <p className="mt-1 text-sm text-muted">
+                                    Something went wrong while fetching students. Try again.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => refetch()}
+                                    className="mt-4 inline-flex h-9 items-center gap-2 rounded-control border border-border px-3 text-sm font-medium text-ink outline-none transition-transform duration-150 ease-[var(--ease-out)] hover:bg-bg active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                                >
+                                    <ArrowClockwise size={16} weight="bold" aria-hidden="true" />
+                                    Try again
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {!isPending && !isError && students.length === 0 && (
                         <div className="rounded-card border border-dashed border-border bg-surface px-6 py-10 text-center">
                             <p className="text-sm text-muted">
                                 No students yet. Add one above to start the roster.
                             </p>
                         </div>
-                    ) : (
+                    )}
+
+                    {!isPending && !isError && students.length > 0 && (
                         <ul className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface">
                             <AnimatePresence initial={false}>
                                 {students.map((student) => (
                                     <motion.li
-                                        key={student.id}
+                                        key={student._id}
                                         layout={!reduce}
                                         initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
                                         animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
-                                        exit={reduce ? { opacity: 0 } : { opacity: 0, x: -8 }}
                                         transition={{ duration: 0.2, ease: EASE_OUT }}
                                         className="flex items-center gap-4 px-4 py-3"
                                     >
@@ -425,14 +511,6 @@ const SeatPlanner = () => {
                                                 Roll {student.roll} · {student.height} cm
                                             </p>
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeStudent(student.id)}
-                                            aria-label={`Remove ${student.name}`}
-                                            className="grid h-9 w-9 shrink-0 place-items-center rounded-control text-muted outline-none transition-colors duration-150 ease-[var(--ease-out)] hover:bg-danger-bg hover:text-danger focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                                        >
-                                            <Trash size={18} aria-hidden="true" />
-                                        </button>
                                     </motion.li>
                                 ))}
                             </AnimatePresence>
@@ -440,7 +518,20 @@ const SeatPlanner = () => {
                     )}
                 </motion.div>
             </motion.div>
+
         </section>
+
+        {/* The classroom itself, in its own section rather than a row of the
+            grid above: the intro column is sticky, and a second grid row would
+            let it keep sticking over this content. Reads the same roster
+            query; on a fetch error the retry block above owns the moment, so
+            the room stays out of the way. */}
+        {!isError && (
+            <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:pb-24">
+                <ClassroomMap students={students} isPending={isPending} />
+            </section>
+        )}
+        </>
     );
 };
 
