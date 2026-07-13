@@ -1,6 +1,10 @@
+# 📌 You can Find the Credentials in
+### `DEMOCRED.md`
+
+
 # 🛡️ Anti Bully Protocol
 
-A modern **MERN Stack** web application designed to create a safer educational environment by providing a secure platform for reporting, managing, and resolving bullying incidents. The system enables students to submit reports while allowing designated captains to review, manage, and coordinate appropriate actions.
+A modern **Mobile First** **MERN Stack** web application designed to create a safer educational environment by providing a secure platform for reporting, managing, and resolving bullying incidents. The system enables students to submit reports while allowing designated captains to review, manage, and coordinate appropriate actions.
 
 ---
 
@@ -203,15 +207,6 @@ JWT_SECRET=
 
 ---
 
-## 🛡 Captain
-
-Only **Roll 2** and **Roll 3** can:
-
-* Access Captain Dashboard
-* Review reports
-* Update report status
-* Monitor incidents
-* Manage student reports
 
 ---
 
