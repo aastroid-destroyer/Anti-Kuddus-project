@@ -10,7 +10,6 @@ password: 8mTK4cQ5
 
 
 email	password
-1@classb.local	9KK0Ie66
 2@classb.local	ukgE2Nbs
 3@classb.local	taNmtJgi
 4@classb.local	3ZsmCpWR
