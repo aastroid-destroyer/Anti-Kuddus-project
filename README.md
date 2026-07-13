@@ -1,6 +1,10 @@
+# 📌 You can Find the Credentials in
+### `DEMOCRED.md`
+
+
 # 🛡️ Anti Bully Protocol
 
-A modern **MERN Stack** web application designed to create a safer educational environment by providing a secure platform for reporting, managing, and resolving bullying incidents. The system enables students to submit reports while allowing designated captains to review, manage, and coordinate appropriate actions.
+A modern **Mobile First** **MERN Stack** web application designed to create a safer educational environment by providing a secure platform for reporting, managing, and resolving bullying incidents. The system enables students to submit reports while allowing designated captains to review, manage, and coordinate appropriate actions.
 
 ---
 
@@ -9,7 +13,7 @@ A modern **MERN Stack** web application designed to create a safer educational e
 **Website:** *Add your deployed URL here*
 
 ```text
-https://your-live-site-url.com
+https://ab-client-eight.vercel.app/
 ```
 
 ---
@@ -43,6 +47,8 @@ Only the following users can access the **Captain Dashboard**:
 * Roll 3
 
 These two users are the **Captains**.
+
+### 3. Login in to any other user and checkout all the feature. Only for SOS notification Only captain can Access that
 
 All other students are treated as **Normal Students** and cannot access captain-only routes.
 
@@ -117,21 +123,53 @@ Phosphor Icons
 # 📂 Project Structure
 
 ```text
-project-root
+Hackathon/
+├── README.md                    Project overview, tech stack, setup instructions
+├── DEMOCRED.md                  Demo credentials for testing
+├── docs/
+│   ├── design.md                Design system rules (mandatory per CLAUDE.md)
+│   └── frontend-rules.md        Frontend conventions (mandatory per CLAUDE.md)
 │
-├── client
-│   ├── src
-│   ├── public
-│   └── package.json
+├── project-set/                 FRONTEND — React 19 + Vite + Tailwind v4
+│   ├── index.html
+│   ├── vite.config.js
+│   ├── eslint.config.js
+│   ├── vercel.json              Deployment config (Vercel)
+│   ├── public/
+│   │   └── ban.png, vite.svg
+│   └── src/
+│       ├── main.jsx             App entry
+│       ├── App.jsx / App.css
+│       ├── index.css
+│       ├── assets/
+│       ├── components/          Shared UI: Navbar, Marquee, ScrambleText, SplitText,
+│       │                        ThemeToggle, ToolArsenal, KuddusDossier, reactbits/CircularText
+│       ├── contexts/            AuthContext/Provider, ThemeContext/Provider
+│       ├── hooks/                useAuth, useAxiosSecure, useTheme
+│       ├── firebase/             firebase.config.js
+│       ├── layouts/              RootLayout.jsx
+│       ├── routes/               router.jsx, PrivateRoute.jsx (role-gated routing)
+│       └── pages/                one folder per feature:
+│           ├── home/                     Home.jsx, GridBackdrop.jsx
+│           ├── login/ , register/        Auth screens
+│           ├── all-complaints/           AllComplaints.jsx, CategoryChart.jsx
+│           ├── make-complaint/           MakeComplaint.jsx (bullying report form)
+│           ├── sos-flare/ , sos-captain/ SosFlare.jsx, CaptainDashboard.jsx (captain-only)
+│           ├── seat-planner/             SeatPlanner.jsx
+│           ├── syllabus-negotiator/      SyllabusNegotiator.jsx, TopicResults.jsx, StudyTips.jsx
+│           ├── tiffin-ledger/            TiffinLedger.jsx + LogForm/FoodBreakdown/
+│           │                             CalorieEngine/PurchasingPower/StatTile
+│           └── kuddus-fact-checker/      KuddusFactChecker.jsx
 │
-├── server
-│   ├── routes
-│   ├── middleware
-│   ├── controllers
-│   ├── models
-│   └── package.json
-│
-└── README.md
+├── project-set-server/          BACKEND — Node.js + Express 5
+│   ├── index.js                 Main server/API entry
+│   ├── create-users.js          Seed/utility script
+│   ├── firebase-service-account.json   (gitignored, untracked ✅)
+│   ├── credentials.txt                 (gitignored, untracked ✅)
+│   ├── .env                            (gitignored, untracked ✅)
+│   └── package.json             Deps: express, mongodb, firebase-admin,
+│                                 @google/generative-ai, cors, dotenv
+
 ```
 
 ---
@@ -203,15 +241,6 @@ JWT_SECRET=
 
 ---
 
-## 🛡 Captain
-
-Only **Roll 2** and **Roll 3** can:
-
-* Access Captain Dashboard
-* Review reports
-* Update report status
-* Monitor incidents
-* Manage student reports
 
 ---
 
