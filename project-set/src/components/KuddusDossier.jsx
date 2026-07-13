@@ -155,10 +155,10 @@ const KuddusDossier = () => {
               {/* Info */}
               <div className="space-y-4 px-6 pb-6">
                 <div>
-                  <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
-                    Known Alias
+                  <p className="mb-1 font-mono text-[12px] uppercase tracking-[0.25em] text-muted">
+                    The Top Bully
                   </p>
-                  <h2 className="text-2xl font-bold tracking-tight">"The Taxman"</h2>
+                  <h2 className="text-2xl font-bold tracking-tight">"Kuddus The Taxman"</h2>
                 </div>
 
                 <div className="h-px bg-border" />

@@ -79,11 +79,24 @@ const Login = () => {
         'focus-visible:ring-offset-2 focus-visible:ring-offset-surface';
 
     return (
-        <main className="flex min-h-[100dvh] items-center justify-center bg-bg px-4 py-10">
-            <div className="w-full max-w-sm">
-                <div className="mb-8 text-center">
-                    <h1 className="text-2xl font-semibold tracking-tight text-ink">Benami</h1>
-                    <p className="mt-2 text-sm text-muted">
+        <main className="relative flex min-h-[100dvh] items-center justify-center bg-bg px-4 py-10 overflow-hidden">
+            {/* Decorative background elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-accent/5 blur-3xl"></div>
+                <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-accent/5 blur-3xl"></div>
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+            </div>
+
+            <div className="w-full max-w-sm relative z-10">
+                <div className="mb-10 text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-surface border border-border mb-6 shadow-sm">
+                        <svg className="w-8 h-8 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    </div>
+                    <h1 className="text-3xl font-bold tracking-tight text-ink">Benami</h1>
+                    <p className="mt-3 text-sm text-muted max-w-xs mx-auto leading-relaxed">
                         Sign in to file a complaint. No one sees who you are.
                     </p>
                 </div>
@@ -92,7 +105,7 @@ const Login = () => {
                     noValidate
                     onSubmit={handleSubmit}
                     aria-busy={submitting}
-                    className="rounded-card border border-border bg-surface p-6"
+                    className="rounded-card border border-border bg-surface p-6 shadow-sm"
                 >
                     {formError && (
                         <div
@@ -103,7 +116,7 @@ const Login = () => {
                         </div>
                     )}
 
-                    <div className="mb-4">
+                    <div className="mb-5">
                         <label htmlFor="roll" className="mb-1.5 block text-sm font-medium text-ink">
                             Roll number
                         </label>
@@ -174,6 +187,12 @@ const Login = () => {
                         {submitting ? 'Signing in...' : 'Sign in'}
                     </button>
                 </form>
+
+                <div className="mt-8 text-center">
+                    <p className="text-xs text-muted">
+                        Your identity is protected with end-to-end encryption
+                    </p>
+                </div>
             </div>
         </main>
     );

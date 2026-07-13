@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
+import { motion, useReducedMotion } from 'motion/react';
 import useAuth from '../hooks/useAuth';
 import ThemeToggle from './ThemeToggle';
+import pic from '../assets/pic-PhotoRoom.png'
+
+// Mirrors --ease-out from index.css so the JS-driven float shares the same
+// rhythm as every CSS transition in the bar.
+const EASE_OUT = [0.23, 1, 0.32, 1];
 
 // Public links render for everyone. "Make a complaint" is behind PrivateRoute,
 // so an unauthenticated tap lands on /login and returns here after sign in.
@@ -39,6 +45,7 @@ const Navbar = () => {
     const { user, loading, logOut } = useAuth();
     const navigate = useNavigate();
     const { pathname } = useLocation();
+    const reduceMotion = useReducedMotion();
     const [menuOpen, setMenuOpen] = useState(false);
     const [signingOut, setSigningOut] = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -111,10 +118,12 @@ const Navbar = () => {
     }, [positionPill]);
 
     // Scroll-aware surface. Only flips the boolean when the threshold is crossed,
-    // so the tree does not re-render every frame (frontend-rules §7).
+    // so the tree does not re-render every frame (frontend-rules §7). The
+    // threshold sits above the iOS rubber-band overscroll range so the float
+    // doesn't flicker when the page bounces at the very top.
     useEffect(() => {
         const onScroll = () => {
-            const next = window.scrollY > 4;
+            const next = window.scrollY > 24;
             setScrolled((prev) => (prev === next ? prev : next));
         };
         onScroll();
@@ -168,6 +177,10 @@ const Navbar = () => {
         } catch {
             // Sign out rarely fails; if it does, keep the user where they are
             // rather than pretending they were logged out.
+        } finally {
+            // Navbar stays mounted across the route change (SPA), so this must
+            // reset on success too - otherwise the next login re-renders the
+            // button still stuck on "Logging out...".
             setSigningOut(false);
         }
     };
@@ -193,13 +206,6 @@ const Navbar = () => {
             >
                 Log in
             </Link>
-            <Link
-                to="/register"
-                onClick={closeMenu}
-                className="flex h-9 items-center rounded-control bg-accent px-4 text-sm font-medium text-accent-ink shadow-raised outline-none transition-transform duration-150 ease-[var(--ease-out)] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-            >
-                Sign up
-            </Link>
         </>
     );
 
@@ -213,39 +219,59 @@ const Navbar = () => {
     );
 
     return (
-        <header
-            className={[
-                'nav-enter sticky top-0 z-30 border-b',
-                solidSurface ? 'bg-bg' : 'backdrop-blur-xl',
-                'transition-[background-color,box-shadow,border-color] duration-300 ease-[var(--ease-out)]',
-                'motion-reduce:transition-none',
-                scrolled
-                    ? `border-border shadow-bar ${solidSurface ? '' : 'bg-bg/85'}`
-                    : `shadow-none ${solidSurface ? 'border-transparent' : 'border-transparent bg-bg/60'}`,
-            ].join(' ')}
+        <motion.header
+            // Raw `transform` string, not the `y` shorthand: motion's x/y/scale
+            // shorthands interpolate via rAF on the main thread, while a plain
+            // transform value stays a compositor-only, hardware-accelerated animation.
+            animate={{ transform: `translateY(${scrolled && !reduceMotion ? 8 : 0}px)` }}
+            transition={{ duration: 0.32, ease: EASE_OUT }}
+            className="nav-enter sticky top-2 z-30 sm:top-3"
         >
+            {/* Docked chrome: the flush, edge-to-edge bar at rest. Fades out as
+                the bar lifts into its floating state below. */}
+            <div
+                aria-hidden="true"
+                className={[
+                    'pointer-events-none absolute inset-0 border-b transition-[opacity,background-color,border-color] duration-300 ease-[var(--ease-out)]',
+                    'motion-reduce:transition-none',
+                    solidSurface ? 'bg-bg' : 'backdrop-blur-2xl',
+                    scrolled
+                        ? 'border-transparent opacity-0'
+                        : `border-transparent opacity-100 ${solidSurface ? '' : 'bg-bg/30'}`,
+                ].join(' ')}
+            />
+            {/* Floating chrome: the inset, rounded island the bar settles into
+                once the page scrolls. Sits inactive (opacity-0) at rest so the
+                two chrome layers crossfade instead of stacking. */}
+            <div
+                aria-hidden="true"
+                className={[
+                    'pointer-events-none absolute inset-x-3 inset-y-0 rounded-2xl border transition-[opacity,background-color,border-color,box-shadow] duration-300 ease-[var(--ease-out)] sm:inset-x-4',
+                    'motion-reduce:transition-none',
+                    solidSurface ? 'bg-bg' : 'bg-bg/45 backdrop-blur-2xl',
+                    scrolled
+                        ? 'border-border opacity-100 shadow-bar'
+                        : 'border-transparent opacity-0 shadow-none',
+                ].join(' ')}
+            />
+
             <nav
                 aria-label="Primary"
-                className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6"
+                className="relative z-10 mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6"
             >
                 <Link
                     to="/"
                     onClick={closeMenu}
                     className="group flex items-center gap-2.5 rounded-control outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                 >
-                    <span
-                        aria-hidden="true"
-                        className="grid h-9 w-9 place-items-center rounded-control bg-accent text-sm font-bold tracking-tight text-accent-ink shadow-raised transition-transform duration-200 ease-[var(--ease-out)] group-hover:-translate-y-0.5 motion-reduce:transform-none"
-                    >
-                        AB
-                    </span>
+                    <img src={pic} alt="" className='h-9 w-9 hover:-translate-y-1 transition-transform duration-200 ease-out rounded-full'/>
                     <span className="text-base font-semibold tracking-tight text-ink">
                         Anti Bully Protocol
                     </span>
                 </Link>
 
                 {/* Desktop: links + theme toggle + auth on one line. */}
-                <div className="hidden items-center gap-2 md:flex">
+                <div className="hidden items-center gap-3 md:flex">
                     {/* Links row is the pill's positioning context. */}
                     <div ref={navRef} className="relative flex items-center gap-1">
                         <span
@@ -259,7 +285,7 @@ const Navbar = () => {
                             </NavLink>
                         ))}
                     </div>
-                    <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
+                    <span className="mx-1 h-6 w-px bg-border" aria-hidden="true" />
                     <ThemeToggle />
                     {authActions}
                 </div>
@@ -300,9 +326,13 @@ const Navbar = () => {
             <div
                 id="mobile-menu"
                 className={[
-                    'absolute inset-x-0 top-full origin-top border-b border-border shadow-menu md:hidden',
-                    solidSurface ? 'bg-bg' : 'bg-bg/95 backdrop-blur-xl',
+                    'absolute top-full border-border shadow-menu origin-top md:hidden',
                     'transition-[opacity,transform,visibility] duration-200 ease-[var(--ease-out)] motion-reduce:transition-none',
+                    solidSurface ? 'bg-bg' : 'bg-bg/95 backdrop-blur-xl',
+                    // Matches the floating pill's shape once scrolled, so the
+                    // dropdown reads as part of the same island; snaps (not
+                    // animated) since the two states rarely change at once.
+                    scrolled ? 'inset-x-3 rounded-b-2xl border-x border-b sm:inset-x-4' : 'inset-x-0 border-b',
                     menuOpen
                         ? 'visible translate-y-0 opacity-100'
                         : 'pointer-events-none invisible -translate-y-2 opacity-0',
@@ -336,7 +366,7 @@ const Navbar = () => {
                     </div>
                 </div>
             </div>
-        </header>
+        </motion.header>
     );
 };
 

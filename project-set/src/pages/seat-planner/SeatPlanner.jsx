@@ -223,7 +223,7 @@ const SeatPlanner = () => {
                 {/* Oversized ghost word, an editorial nod. Decorative only. */}
                 <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute -top-10 -left-1 -z-10 select-none text-[24vw] leading-[0.8] font-bold tracking-tighter text-ink/4 lg:-top-16 lg:text-[13rem]"
+                    className="pointer-events-none absolute -top-10 -left-1 -z-10 select-none text-[24vw] leading-[0.8] font-bold tracking-tighter text-ink/3 lg:-top-16 lg:text-[11rem]"
                 >
                     Seat will be sorted automatically
                 </span>
