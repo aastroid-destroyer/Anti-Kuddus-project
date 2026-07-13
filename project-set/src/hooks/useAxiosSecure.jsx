@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { auth } from '../firebase/firebase.config';
 
+// In dev this falls back to the local server; in prod set VITE_API_URL to
+// the deployed backend's URL (e.g. https://your-server.onrender.com).
 const axiosSecure = axios.create({
-    baseURL: 'http://localhost:3000'
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000'
 })
 
 // Registered ONCE at module load (not per render) so requests never pick up

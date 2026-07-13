@@ -7,7 +7,7 @@ const { getAuth } = require('firebase-admin/auth');
 const { GoogleGenerativeAI, SchemaType } = require('@google/generative-ai');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
@@ -62,7 +62,12 @@ Rules:
 // ─────────────────────────────────────────────────────────────
 // FIREBASE ADMIN INIT  (identity lane — verify tokens ONLY)
 // ─────────────────────────────────────────────────────────────
-const serviceAccount = require('./firebase-service-account.json');
+// Locally we read the gitignored JSON file. On a host without file uploads
+// (Render, Railway, ...), paste the same JSON's contents into a
+// FIREBASE_SERVICE_ACCOUNT env var instead.
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+    : require('./firebase-service-account.json');
 admin.initializeApp({
     credential: admin.cert(serviceAccount),
 });

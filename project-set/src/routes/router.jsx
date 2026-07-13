@@ -55,9 +55,7 @@ export const router = createBrowserRouter([
       {
         path: "sos",
         element: (
-          <PrivateRoute>
             <SosFlare></SosFlare>
-          </PrivateRoute>
         ),
       },
       {
